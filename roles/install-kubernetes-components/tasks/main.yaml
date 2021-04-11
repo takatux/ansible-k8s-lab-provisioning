@@ -1,0 +1,31 @@
+---
+- name : Add Google Packages Key
+  shell:
+    cmd: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+- name: Adding Kube Repo
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: Install Kubeadm
+  apt:
+    name: kubeadm={{ kubeadm_version }}
+    state: present
+    update_cache: yes
+
+- name: Install Kubelet
+  apt:
+    name: kubelet={{ kubelet_version }}
+    state: present
+    update_cache: yes
+
+- name: Install Kubectl
+  apt:
+    name: kubectl={{ kubectl_version }}
+    state: present
+    update_cache: yes
+
+- name: Hold Kubeadm Kubectl Kubelet
+  shell:
+    cmd: apt-mark hold kubeadm kubelet kubectl

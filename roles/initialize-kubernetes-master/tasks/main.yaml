@@ -1,0 +1,71 @@
+---
+- name: Checking if Master Already Initialized
+  stat:
+    path: "/etc/kubernetes/admin.conf"
+  register: admin_config_k8s
+
+- name: Report if files exists
+  debug:
+    msg: "Master is Initialized Already"
+  when: admin_config_k8s.stat.exists
+
+- name: Report if files doesn't exist
+  debug:
+    msg: "Master is not Initialized Yet, Initializing.."
+  when: not admin_config_k8s.stat.exists
+
+- name: Running Kubernetes Init Master
+  shell:
+    cmd: kubeadm init --control-plane-endpoint={{ CONTROL_PLANE_ENDPOINT }} --pod-network-cidr={{ POD_NETWORK_CIDR }} --apiserver-advertise-address={{ APISERVER_ADVERTISE_ADDRESS }}
+  when: not admin_config_k8s.stat.exists
+
+- name: Create config directory in HOME
+  file:
+    path: "/home/{{ user_for_kube_admin }}/.kube"
+    state: directory
+    mode: '0755'
+    group: '{{ user_for_kube_admin }}'
+    owner: '{{ user_for_kube_admin }}'
+
+- name: Post Initialization Copy Config File to Home
+  copy:
+    src: '/etc/kubernetes/admin.conf'
+    dest: "/home/{{ user_for_kube_admin }}/.kube/config"
+    remote_src: yes
+
+- name: Change Config File Ownership
+  file:
+    path: "/home/{{ user_for_kube_admin }}/.kube/config"
+    owner: "{{ user_for_kube_admin }}"
+    group: "{{ user_for_kube_admin }}"
+
+- name: Copy Manifests
+  copy:
+    src: '../../../manifests'
+    dest: "/home/{{ user_for_kube_admin }}/"
+    directory_mode: yes
+    remote_src: no
+
+- name: Change Manifest Files Ownership
+  file:
+    path: "/home/{{ user_for_kube_admin }}/manifests"
+    owner: "{{ user_for_kube_admin }}"
+    group: "{{ user_for_kube_admin }}"
+    mode: '0744'
+    state: directory
+    recurse: yes
+
+- name: Change Calico Manifest Value
+  replace:
+    path: /home/{{ user_for_kube_admin }}/manifests/calico.yaml
+    regexp: 'SESUAIKAN SUBNET KUBEADM'
+    replace: '{{ POD_NETWORK_CIDR }}'
+
+- name: Apply Calico CNI
+  shell:
+    cmd: kubectl apply -f /home/{{ user_for_kube_admin }}/manifests/calico.yaml
+  become_user: "{{ user_for_kube_admin }}"
+
+#- name: Chanage POD NETWORK CIDR
+#  shell:
+#    cmd: sed -i '"s/SESUAIKAN SUBNET KUBEADM"/"{{ POD_NETWORK_CIDR }}"/' /home/"{{ user_for_kube_admin }}"/manifests

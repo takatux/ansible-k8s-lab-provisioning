@@ -1,0 +1,16 @@
+[all]
+al-node-1 ansible_host=10.70.70.53
+al-node-2 ansible_host=10.70.70.54
+al-node-3 ansible_host=10.70.70.55
+
+[nodes]
+al-node-[2:3]
+
+[controller]
+al-node-1
+
+[master]
+al-node-2
+
+[worker]
+al-node-3

@@ -1,0 +1,13 @@
+## Administration ##
+user_for_kube_admin: "ubuntu"
+
+## Package Version ##
+kubeadm_version: "1.20.5-00"
+kubectl_version: "1.20.5-00"
+kubelet_version: "1.20.5-00"
+
+## Kubeadm init parameters ##
+CONTROL_PLANE_ENDPOINT: "10.70.70.54"
+APISERVER_ADVERTISE_ADDRESS: "10.70.70.54"
+POD_NETWORK_CIDR: "10.10.0.0/24"
+

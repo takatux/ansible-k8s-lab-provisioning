@@ -1,0 +1,24 @@
+---
+- name: Install Dependencies
+  hosts: all
+  become: yes
+  roles: 
+  - {role: "install-dependencies", tags: "install-dependencies"}
+
+- name: Install K8s Master Dependencies
+  hosts: master,worker
+  become: yes
+  roles:
+    - {role: "install-kubernetes-components", tags: "install-kubernetes-components"}
+
+- name: Initialize K8s Master
+  hosts: master
+  become: yes
+  roles:
+    - {role: "initialize-kubernetes-master", tags: "initialize-kubernetes-master"}
+
+- name: Join Worker to Master
+  hosts: worker
+  become: yes
+  roles:
+    - {role: "join-worker-to-master", tags: "join-worker-to-master"}
