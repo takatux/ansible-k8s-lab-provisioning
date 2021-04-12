@@ -10,7 +10,8 @@
     cmd: kubeadm token generate
   register: generated_token
 
-- set_fact: 
+- name: Saving generated token to fact
+  set_fact: 
     generated_token_master: "{{ generated_token.stdout }}"
 
 - name: Create join token
@@ -21,13 +22,9 @@
   register: join_command
 
 - set_fact:
-    join_command: "{{ join_command.stdout }}"
+    join_command: "{{join_command.stdout}}"
 
 - name: Joining worker to cluster
   shell:
     cmd: "{{ join_command }}"
-  delegate_to: "{{ item }}"
-  delegate_facts: True
-  with_items: 
-   #- "{{ groups['worker'] }}"
-    - 10.70.70.55
+
